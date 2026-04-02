@@ -5,6 +5,10 @@ APP_DIR="${APP_DIR:-/workspace/app}"
 REPO_URL="${REPO_URL:?set REPO_URL}"
 GIT_REF="${GIT_REF:-master}"
 
+set -x
+echo "PROVISION: REPO_URL=$REPO_URL APP_DIR=$APP_DIR"
+ls -la /workspace || true
+
 mkdir -p /workspace
 
 
