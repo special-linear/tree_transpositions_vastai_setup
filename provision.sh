@@ -31,7 +31,8 @@ print("cuda available:", torch.cuda.is_available())
 print("device_count:", torch.cuda.device_count())
 PY
 
-python -m pip install -U pip wheel setuptools
+python -m pip install -U pip wheel
+python -m pip install "setuptools<82"
 python -m pip install -r "$APP_DIR/requirements.txt"
 python -m pip check
 
