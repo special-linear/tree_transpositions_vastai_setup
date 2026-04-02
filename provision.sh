@@ -7,6 +7,7 @@ GIT_REF="${GIT_REF:-master}"
 
 mkdir -p /workspace
 
+
 # Clone or update repo
 if [ ! -d "$APP_DIR/.git" ]; then
   git clone "$REPO_URL" "$APP_DIR"

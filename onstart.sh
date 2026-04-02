@@ -9,6 +9,7 @@ LOCK="/tmp/ddp.lock"
 exec >>"$LOG" 2>&1
 echo "[repo onstart] $(date) start"
 
+
 # shellcheck disable=SC1091
 source /workspace/.venv/bin/activate
 cd "$APP_DIR"
