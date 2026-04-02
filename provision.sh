@@ -21,10 +21,7 @@ else
 fi
 git -C "$APP_DIR" checkout -f "$GIT_REF" || true
 
-# Venv in /workspace (persists across restarts of the same instance)
-python3 -m venv --system-site-packages /workspace/.venv || true
-# shellcheck disable=SC1091
-source /workspace/.venv/bin/activate
+source /venv/main/bin/activate
 
 python - <<'PY'
 import torch
