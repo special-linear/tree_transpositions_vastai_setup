@@ -4,6 +4,8 @@ from cayleypy import CayleyGraph, CayleyGraphDef
 from cayleypy.permutation_utils import transposition
 import networkx as nx
 
+t0 = time.time()
+
 # TASK ACQUISITION AND REPORTING
 
 BROKER_URL = os.environ.get('BROKER_URL')
