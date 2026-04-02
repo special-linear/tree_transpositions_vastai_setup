@@ -242,7 +242,8 @@ def main():
 
         # (1) claim with protection (catch errors and continue)
         try:
-            tasks = claim(CLAIM_N, (deadline - time.time() + 2 * SAFETY_SECONDS) // 60)
+            lease_min = (deadline - time.time() + 2 * SAFETY_SECONDS) // 60 if TIME_LIMIT_SECONDS else LEASE_MIN
+            tasks = claim(CLAIM_N, lease_min)
         except Exception as e:
             # Don't crash; backoff and retry later
             sleep = min(BACKOFF_CAP, 5 + random.random() * 5)
