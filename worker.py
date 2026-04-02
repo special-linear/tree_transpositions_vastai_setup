@@ -1,4 +1,5 @@
 import time, os, uuid, requests
+from datetime import datetime, timezone
 from pathlib import Path
 from cayleypy import CayleyGraph, CayleyGraphDef
 from cayleypy.permutation_utils import transposition
@@ -220,14 +221,15 @@ def tree_cayley_diameter(code: str):
 def main():
     CLAIM_N = 1
     LEASE_MIN = 120
-    TIME_LIMIT_SECONDS = 2 * 60 * 60  # e.g. 2 hours
+    TIME_LIMIT_SECONDS = os.environ.get('TIME_LIMIT_SECONDS')
+    # TIME_LIMIT_SECONDS = 2 * 60 * 60  # e.g. 2 hours
     SAFETY_SECONDS = 300  # stop early to ensure final submit
 
     SUBMIT_EVERY = 1  # submit in chunks to avoid losing work
     EMPTY_QUEUE_SLEEP = 30  # seconds
     MAX_EMPTY_CLAIMS = 3  # how many empty claims before exiting
 
-    deadline = t0 + TIME_LIMIT_SECONDS - SAFETY_SECONDS
+    deadline = (t0 + TIME_LIMIT_SECONDS - SAFETY_SECONDS) if TIME_LIMIT_SECONDS else float('inf')
 
     total_claimed = 0
     total_done = 0
@@ -259,7 +261,8 @@ def main():
 
         empty_claims = 0
         total_claimed += len(tasks)
-        print(f"Claimed {len(tasks)} tasks (total_claimed={total_claimed}).")
+        now = datetime.now(timezone.utc)
+        print(f"Claimed {len(tasks)} tasks (total_claimed={total_claimed}) at {now:%H:%M:%S UTC}.")
 
         buffer = []
         for t in tasks:
@@ -284,7 +287,8 @@ def main():
             if len(buffer) >= min(SUBMIT_EVERY, CLAIM_N):
                 try:
                     resp = submit_items(buffer)
-                    print(f"Submitted {len(buffer)} items -> {resp}")
+                    now = datetime.now(timezone.utc)
+                    print(f"Submitted {len(buffer)} items -> {resp} at {now:%H:%M:%S UTC}.")
                     buffer.clear()
                 except Exception as e:
                     print(f"[submit] failed: {e}. Saving {len(buffer)} items to pending.")
@@ -297,7 +301,8 @@ def main():
         if buffer:
             try:
                 resp = submit_items(buffer)
-                print(f"Submitted {len(buffer)} items -> {resp}")
+                now = datetime.now(timezone.utc)
+                print(f"Submitted {len(buffer)} items -> {resp} at {now:%H:%M:%S UTC}.")
                 buffer.clear()
             except Exception as e:
                 print(f"[submit] failed: {e}. Saving {len(buffer)} items to pending.")
