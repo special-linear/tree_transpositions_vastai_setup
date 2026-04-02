@@ -22,9 +22,17 @@ fi
 git -C "$APP_DIR" checkout -f "$GIT_REF" || true
 
 # Venv in /workspace (persists across restarts of the same instance)
-python3 -m venv /workspace/.venv || true
+python3 -m venv --system-site-packages /workspace/.venv || true
 # shellcheck disable=SC1091
 source /workspace/.venv/bin/activate
+
+python - <<'PY'
+import torch
+print("torch:", torch.__version__)
+print("cuda:", torch.version.cuda)
+print("cuda available:", torch.cuda.is_available())
+print("device_count:", torch.cuda.device_count())
+PY
 
 python -m pip install -U pip wheel setuptools
 python -m pip install -r "$APP_DIR/requirements.txt"
