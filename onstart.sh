@@ -7,18 +7,18 @@ WORKER_LOG="/workspace/worker.log"
 PIDFILE="/workspace/ddp.pid"
 LOCK="/tmp/ddp.lock"
 
-# Everything this script prints goes to run.log (and stderr too)
-exec >>"$LOG" 2>&1
+mkdir -p /workspace
+touch "$LOG" "$WORKER_LOG"
+
+# This sends output BOTH to Vast's LOG (stdout) AND to /workspace/run.log
+exec > >(tee -a "$LOG") 2>&1
 set -x
+export PYTHONUNBUFFERED=1
+
 echo "[repo onstart] $(date) start"
 
-# Ensure worker log exists so tail -F works
-touch "$WORKER_LOG"
-
-source /workspace/.venv/bin/activate
+source /venv/main/bin/activate
 cd "$APP_DIR"
-
-export PYTHONUNBUFFERED=1
 
 N=$(python - <<'PY'
 import torch
@@ -38,11 +38,19 @@ PY
   torchrun --standalone --nproc_per_node="$N" sanity_ddp.py
 
   echo "[repo onstart] starting main job"
-  nohup torchrun --standalone --nproc_per_node="$N" worker.py >> "$WORKER_LOG" 2>&1 &
+  nohup torchrun --standalone --nproc_per_node="$N" worker.py >>"$WORKER_LOG" 2>&1 &
   echo $! > "$PIDFILE"
   disown
+
+  # quick “did it immediately crash?” check
+  sleep 2
+  if ! kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    echo "[repo onstart] ERROR: worker exited immediately; tailing worker log:"
+    tail -n 200 "$WORKER_LOG" || true
+    exit 1
+  fi
 ) 9>"$LOCK"
 
-# Stream worker output into run.log / Vast LOG
-echo "[repo onstart] tailing $WORKER_LOG"
+echo "[repo onstart] worker pid=$(cat "$PIDFILE")"
+echo "[repo onstart] tailing $WORKER_LOG into main log"
 tail -n 50 -F "$WORKER_LOG"
