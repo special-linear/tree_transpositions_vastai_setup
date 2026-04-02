@@ -1,33 +1,37 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/workspace/app}"
-LOG="${LOG:-/workspace/run.log}"
+APP_DIR="/workspace/app"
+LOG="/workspace/run.log"
+PIDFILE="/workspace/ddp.pid"
 LOCK="/tmp/ddp.lock"
 
+exec >>"$LOG" 2>&1
+echo "[repo onstart] $(date) start"
+
+# shellcheck disable=SC1091
 source /workspace/.venv/bin/activate
 cd "$APP_DIR"
 
-# Count GPUs
 N=$(python - <<'PY'
 import torch
 print(torch.cuda.device_count())
 PY
 )
 
-flock -n "$LOCK" bash -lc '
-  if pgrep -f "torchrun .*worker.py" >/dev/null; then
-    echo "[onstart] job already running" >> "'"$LOG"'"
+(
+  flock -n 9 || exit 0
+
+  if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    echo "[repo onstart] already running pid=$(cat "$PIDFILE")"
     exit 0
   fi
 
-  echo "[onstart] preflight: sanity_ddp on $N GPUs" >> "'"$LOG"'"
-  if ! torchrun --standalone --nproc_per_node='"$N"' sanity_ddp.py >> "'"$LOG"'" 2>&1; then
-    echo "[onstart] sanity_ddp FAILED; not starting job" >> "'"$LOG"'"
-    exit 1
-  fi
+  echo "[repo onstart] sanity_ddp on $N GPUs"
+  torchrun --standalone --nproc_per_node="$N" sanity_ddp.py
 
-  echo "[onstart] sanity_ddp OK; starting job" >> "'"$LOG"'"
-  nohup torchrun --standalone --nproc_per_node='"$N"' train.py >> "'"$LOG"'" 2>&1 &
+  echo "[repo onstart] starting main job"
+  nohup torchrun --standalone --nproc_per_node="$N" worker.py &
+  echo $! > "$PIDFILE"
   disown
-'
+) 9>"$LOCK"
