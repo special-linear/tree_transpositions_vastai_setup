@@ -22,23 +22,24 @@ def main():
     print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"), flush=True)
     for n in range(2, 15):
         torch.cuda.empty_cache()
-        print('GPU memory before starting:\n'
-              f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
-              f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
-              f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
-              f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}',
-              flush=True
-              )
-        torch.cuda.reset_peak_memory_stats()
+        # print('GPU memory before starting:\n'
+        #       f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
+        #       f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
+        #       f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
+        #       f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}',
+        #       flush=True
+        #       )
+        # torch.cuda.reset_peak_memory_stats()
         try:
             d = test_workload(n)
             p = psutil.Process(os.getpid())
-            print(f'Test workload returned diam={d}.\n'
-                  f'Exec details: pid={p.pid} threads={p.num_threads()}\n'
-                  f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
-                  f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
-                  f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
-                  f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}', flush=True)
+            print(f'Test workload returned diam={d}.'
+                  # f'Exec details: pid={p.pid} threads={p.num_threads()}\n'
+                  # f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
+                  # f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
+                  # f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
+                  # f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}'
+                  , flush=True)
         except Exception as e:
             now = datetime.now(timezone.utc)
             print(f'Calculation failed at {now:%H:%M:%S UTC}, exception:\n{e}')
