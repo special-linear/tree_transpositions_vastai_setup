@@ -18,6 +18,8 @@ def test_workload(n):
 
 
 def main():
+    print("CUDA device count:", torch.cuda.device_count(), flush=True)
+    print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"), flush=True)
     for n in range(2, 15):
         torch.cuda.empty_cache()
         print('GPU memory before starting:\n'
