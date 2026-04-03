@@ -20,6 +20,13 @@ def test_workload(n):
 def main():
     for n in range(2, 15):
         torch.cuda.empty_cache()
+        print('GPU memory before starting:\n'
+              f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
+              f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
+              f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
+              f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}',
+              flush=True
+              )
         torch.cuda.reset_peak_memory_stats()
         try:
             d = test_workload(n)
@@ -29,7 +36,7 @@ def main():
                   f'cur_gpu_mem_all={torch.cuda.memory_allocated()} '
                   f'cur_gpu_mem_res={torch.cuda.memory_reserved()} '
                   f'peak_gpu_mem_all={torch.cuda.max_memory_allocated()} '
-                  f'peal_gpu_mem_res={torch.cuda.max_memory_reserved()}', flush=True)
+                  f'peak_gpu_mem_res={torch.cuda.max_memory_reserved()}', flush=True)
         except Exception as e:
             now = datetime.now(timezone.utc)
             print(f'Calculation failed at {now:%H:%M:%S UTC}, exception:\n{e}')
