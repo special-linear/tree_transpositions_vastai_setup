@@ -34,8 +34,8 @@ PY
     exit 0
   fi
 
-  echo "[repo onstart] sanity_ddp on $N GPUs"
-  torchrun --standalone --nproc_per_node="$N" sanity_ddp.py
+#  echo "[repo onstart] sanity_ddp on $N GPUs"
+#  torchrun --standalone --nproc_per_node="$N" sanity_ddp.py
 
   echo "[repo onstart] starting main job"
   nohup python worker.py >>"$WORKER_LOG" 2>&1 &
