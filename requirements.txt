@@ -2,4 +2,4 @@ numpy>=2.4.0
 
 numba>=0.65.0
 
-cayleypy @ git+https://github.com/TryDotAtwo/cayleypy.git@feature/bfs-packed-scatter
+cayleypy @ git+https://github.com/TryDotAtwo/cayleypy.git@main
