@@ -38,7 +38,7 @@ PY
 #  torchrun --standalone --nproc_per_node="$N" sanity_ddp.py
 
   echo "[repo onstart] starting main job"
-  nohup python worker.py >>"$WORKER_LOG" 2>&1 &
+  nohup torchrun --standalone --nproc_per_node="$N" worker.py >>"$WORKER_LOG" 2>&1 &
   echo $! > "$PIDFILE"
   disown
 
